@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Работа над ошибками: рецензия на фильм</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=PT+Mono&family=Rubik:wght@400;600;700&family=Rubik+Spray+Paint&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+/* Layout: one photocopied zine sheet taped to a wall, feedback panel docked below it like a stapled note. */
+:root{
+  --wall:#D9D9D3; --sheet:#F2F2EE; --ink:#151515; --muted:#5B5B57; --line:#151515;
+  --red:#D7261E; --tape:#F5D20A; --ok:#1F7A3A; --panel:#FFFFFF; --ghost:rgba(21,21,21,.08);
+  --spray:"Rubik Spray Paint","Rubik",system-ui,sans-serif;
+  --type:"Special Elite","PT Mono","Courier New",monospace;
+  --marker:"Permanent Marker","Rubik",cursive;
+  --ui:"Rubik",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .32 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-soft:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .14 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --wall:#0E0E0E; --sheet:#1C1C1B; --ink:#ECECE6; --muted:#A3A39C; --line:#ECECE6;
+    --red:#FF5446; --tape:#E8C500; --ok:#5FD08A; --panel:#232322; --ghost:rgba(236,236,230,.08); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --wall:#0E0E0E; --sheet:#1C1C1B; --ink:#ECECE6; --muted:#A3A39C; --line:#ECECE6;
+  --red:#FF5446; --tape:#E8C500; --ok:#5FD08A; --panel:#232322; --ghost:rgba(236,236,230,.08); color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+body{margin:0;background:var(--wall) var(--grain);color:var(--ink);font:400 16px/1.55 var(--ui);-webkit-font-smoothing:antialiased}
+.wrap{max-width:700px;margin:0 auto;padding-block:26px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header h1{font:400 clamp(2.3rem,9vw,3.6rem)/.95 var(--spray);color:var(--ink);margin:0 0 10px;text-wrap:balance;letter-spacing:.01em}
+header h1::after{content:"";display:block;width:3.2em;height:.22em;margin-top:.18em;background:var(--red);transform:rotate(-1.2deg)}
+header p{margin:0;font:400 1.05rem/1.45 var(--type);color:var(--ink)}
+#progress{margin-top:12px;font:600 .78rem/1.3 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-height:1.3em}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{font:600 .78rem/1.3 var(--ui);letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;color:var(--ink);background:transparent;border:2px dashed var(--line)}
+.chip.cur{background:var(--tape);color:#151515;border:2px solid #151515;transform:rotate(-1.5deg)}
+.chip.done{background:var(--ink);color:var(--sheet);border:2px solid var(--ink);text-decoration:line-through 2px var(--red)}
+
+.page{position:relative;margin-top:26px;background:var(--sheet) var(--grain-soft);
+  padding:30px 18px 30px 22px;border:2px solid var(--line);transform:rotate(-.35deg);
+  box-shadow:6px 6px 0 var(--ink);overflow-x:auto}
+.page::before,.page::after{content:"";position:absolute;top:-12px;width:96px;height:24px;background:var(--tape);opacity:.88;box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.page::before{left:18px;transform:rotate(-5deg)}
+.page::after{right:18px;transform:rotate(4deg)}
+.page h2{display:inline-block;margin:0 0 10px;padding:2px 10px;font:400 1rem/1.4 var(--type);letter-spacing:.2em;text-transform:uppercase;color:var(--sheet);background:var(--ink)}
+.text{font:400 1.32rem/2.7 var(--type);color:var(--ink);margin:0}
+.text+.text{margin-top:.5em}
+
+.sent{box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sent.ru{color:var(--muted);text-decoration:line-through 1px var(--muted)}
+.seg{position:relative}
+.seg.tap{cursor:pointer}
+.seg.tap:hover{background:var(--ghost)}
+.gap{display:inline-block;width:.9em;text-align:center;position:relative;line-height:1.2;vertical-align:baseline}
+.gap.tap{cursor:pointer;padding:.55em .1em;margin:-.55em 0}
+.gap .dot{display:inline-block;width:6px;height:6px;background:var(--muted);vertical-align:middle;transform:rotate(45deg)}
+.gap.tap:hover .dot{background:var(--red)}
+.tap:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.seg.fixed,.gap.ins{display:inline-block;position:relative;line-height:1.2;white-space:nowrap}
+.gap.ins{width:auto;min-width:.9em}
+.seg.fixed .orig{text-decoration:line-through 3px var(--red)}
+.gap.ins .caret{color:var(--red);font:700 .8em var(--ui)}
+.above{position:absolute;left:50%;bottom:100%;transform:translateX(-50%) rotate(-2deg);font:400 .9em/1 var(--marker);color:var(--red);white-space:nowrap;pointer-events:none}
+.seg.fixed.long{display:inline;white-space:normal;line-height:inherit}
+.seg.fixed.long .neu{font-family:var(--marker);color:var(--red)}
+.sel{outline:3px solid var(--ink);outline-offset:2px;background:var(--tape);color:#151515}
+.pulse{outline:3px dashed var(--red);outline-offset:3px;animation:blink .9s ease-in-out infinite alternate}
+@keyframes blink{from{outline-color:var(--red)}to{outline-color:transparent}}
+.nope{animation:shake .32s}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}.nope{animation:none;color:var(--red)}}
+
+.panel{margin-top:22px;background:var(--panel);border:2px solid var(--line);padding:18px 18px 20px;box-shadow:4px 4px 0 var(--ink)}
+.panel.dock{position:sticky;bottom:0;max-height:45vh;overflow-y:auto;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.panel p{margin:0 0 10px}
+.lead{font:700 1.05rem/1.35 var(--ui);text-transform:uppercase;letter-spacing:.03em}
+.count b{background:var(--tape);color:#151515;padding:0 4px}
+.howto{color:var(--muted);font-size:.95rem}
+.msg{color:var(--ink);background:var(--ghost);border-left:5px solid var(--red);padding:8px 12px}
+.msg.ok{border-left-color:var(--ok);color:var(--ok);font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+.btn{font:700 .95rem/1 var(--ui);letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:var(--sheet);border:2px solid var(--ink);padding:.85em 1.2em;cursor:pointer;box-shadow:3px 3px 0 var(--red);transition:transform .08s,box-shadow .08s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--red)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--red)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:none}
+.btn:focus-visible,input:focus-visible,summary:focus-visible,.speak:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.type{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.type input{flex:1 1 200px;min-width:0;font:400 1.3rem/1.2 var(--type);color:var(--ink);background:var(--sheet);border:2px solid var(--line);border-radius:0;padding:8px 12px}
+.hand{font:400 1.25rem/1.6 var(--type);color:var(--ink)}
+.red{color:var(--red);font-family:var(--marker)}
+.clean{margin:4px 0 0;white-space:pre-line}
+.speak{font:600 .85rem var(--ui);letter-spacing:.06em;text-transform:uppercase;background:none;border:0;color:var(--red);cursor:pointer;padding:4px 0;text-decoration:underline 2px;text-underline-offset:4px}
+
+.rule h3{font:400 clamp(1.6rem,6vw,2.1rem)/1.05 var(--spray);color:var(--ink);margin:0 0 6px;text-wrap:balance}
+.rule .term{display:inline-block;font:600 .75rem/1.4 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--sheet);background:var(--red);padding:2px 8px;margin-bottom:12px}
+.rule ul{list-style:none;padding:0;margin:12px 0}
+.rule li{font:400 1.15rem/1.5 var(--type);padding:4px 0 4px 18px;position:relative}
+.rule li::before{content:"";position:absolute;left:0;top:.75em;width:8px;height:8px;background:var(--red)}
+.rule li span{font:400 .88rem var(--ui);color:var(--muted);margin-left:6px}
+.rule li b{background:var(--tape);color:#151515;font-weight:400;padding:0 2px}
+.rule .tip{font-size:.93rem;color:var(--muted);border-top:2px dashed var(--line);padding-top:10px}
+.tbl{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;font:400 1.08rem/1.4 var(--type);margin:10px 0}
+.tbl span:not(.r){font-weight:700}
+.tbl .r{font:400 .95rem/1.4 var(--ui);color:var(--muted)}
+.steps{margin:6px 0 10px;padding-left:1.3em}
+.steps li{margin-bottom:6px}
+.steps li::marker{font-weight:700;color:var(--red)}
+.better{padding-left:1.1em;margin:6px 0 0}
+.better li{margin-bottom:8px}
+details{border-top:2px dashed var(--line);padding:10px 0;margin-top:8px}
+summary{cursor:pointer;font:700 .9rem var(--ui);letter-spacing:.04em;text-transform:uppercase}
+details .rule{margin-top:12px}
+.stat{margin:4px 0}
+.stat b{background:var(--tape);color:#151515;padding:0 4px}
+
+.drill{font:400 1.35rem/1.9 var(--type);margin:4px 0 12px}
+.gloss{font:600 .75em/1 var(--ui);color:#151515;background:var(--tape);border:2px solid #151515;padding:.2em .5em;white-space:nowrap;vertical-align:middle;display:inline-block;transform:rotate(-1deg)}
+.mine{list-style:none;padding:0;margin:8px 0 0}
+.mine li{font:400 1.12rem/1.45 var(--type);padding:10px 0;border-top:2px dashed var(--line)}
+.mine .was{text-decoration:line-through 2px var(--red)}
+.mine .now{font-family:var(--marker);color:var(--red)}
+.mine .arr{font:700 .9rem var(--ui);color:var(--muted);margin:0 8px}
+.mine .why{font:400 .93rem/1.45 var(--ui);color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Работа над ошибками</h1>
+    <p>Твоя рецензия на «Confessions of an Eco-Terrorist».</p>
+    <div class="chips" id="chips"></div>
+    <div id="progress"></div>
+  </header>
+  <div class="page" id="page" hidden></div>
+  <div class="panel" id="panel" aria-live="polite"></div>
+</div>
+<script>
+const T = s => s.split(' ');
+
+/* ---------- topics: rule + drills ---------- */
+const TOPICS = [
+  {id:'article', short:'Артикли', title:'a и the', term:'Это называется: артикли',
+    body:'Перед существительным в единственном числе почти всегда что-то стоит: a, the, my или this. a — «какой-то, один из многих»: называем что-то впервые или говорим, что это такое. the — «тот самый»: понятно, о чём именно речь.',
+    ex:['She is <b>a</b> journalist. <span>одна из многих</span>','It\'s <b>a</b> good film. <span>какой это фильм</span>','Close <b>the</b> door, please. <span>ту самую, понятно какую</span>','We work on <b>the</b> ship. <span>на нашем корабле</span>'],
+    tip:'Между артиклем и словом может стоять прилагательное: a funny film, a really cool film. Перед гласным звуком a превращается в an: an interesting project.',
+    drills:[
+      {pre:'My sister is', ru:'журналист', post:'.', acc:['a journalist'], hint:'Она одна из многих журналисток. Какой артикль?'},
+      {pre:'I\'m working on', ru:'интересный проект', post:'.', acc:['an interesting project'], hint:'Проект один из многих. А interesting начинается с гласного звука.'},
+      {pre:'I live in Yerevan.', ru:'Город', post:'is very old.', acc:['the city','the town'], hint:'Понятно, какой город: тот самый, где ты живёшь.'},
+      {pre:'Can you turn off', ru:'свет', post:', please?', acc:['the light','the lights'], hint:'Понятно, какой свет: тот, что в комнате.'}]},
+  {id:'ff', short:'Ложные друзья', title:'cinema, cult, illegal', term:'Это называется: ложные друзья переводчика',
+    body:'Эти слова похожи на русские, но значат другое.',
+    table:[['cinema','кинотеатр'],['film, movie, documentary','фильм, документальный фильм'],['a cult','секта'],['famous, iconic','известный, культовый'],['illegal','против закона страны'],['not allowed','нельзя по правилам']],
+    ex:['Let\'s go to the <b>cinema</b>. <span>в кинотеатр</span>','It\'s a great <b>film</b>. <span>фильм</span>'],
+    tip:'Одно исключение: a cult film, a cult classic — «культовый фильм». А a cult organisation — это уже секта.',
+    drills:[
+      {pre:'Let\'s go to', ru:'кинотеатр', post:'tonight.', acc:['the cinema','the movies'], hint:'Здесь нужен именно кинотеатр, здание. И не забудь артикль.'},
+      {pre:'Last night I watched', ru:'документальный фильм', post:'about whales.', acc:['a documentary','a documentary film'], hint:'Фильм, а не кинотеатр. И он один из многих: какой артикль?'},
+      {pre:'Sea Shepherd is', ru:'культовая организация', post:'for many activists.', acc:['an iconic organisation','an iconic organization','a famous organisation','a famous organization','a legendary organisation','a legendary organization','a well-known organisation','a well-known organization'], hint:'cult organisation — это секта. Возьми famous или iconic. И не забудь артикль: перед iconic — an.'},
+      {pre:'Feeding the animals here is', ru:'запрещено правилами', post:'.', acc:['not allowed','against the rules','forbidden','prohibited'], hint:'Это не закон страны, а правила приюта.'}]},
+  {id:'agreement', short:'Окончание -s', title:'he says, they say', term:'Это называется: Present Simple, согласование с подлежащим',
+    body:'Окончание -s бывает только после he, she, it или одного человека, одного предмета. После they, we, I, you и после множественного числа -s нет.',
+    ex:['Peter Brown say<b>s</b>','The activist explain<b>s</b>','The activists explain','These dogs look happy.'],
+    tip:'Если дальше идут чьи-то слова, нужен say: He says: «…». speak — это «говорить вообще» или «говорить на языке»: He speaks English.',
+    drills:[
+      {pre:'My friend', ru:'монтирует', post:'videos at home.', acc:['edits'], hint:'My friend — один человек.'},
+      {pre:'The volunteers', ru:'говорят', post:'that the shelter needs money.', acc:['say'], hint:'Волонтёров много. И дальше идут их слова.'},
+      {pre:'She', ru:'работает', post:'online.', acc:['works'], hint:'Подлежащее she.'},
+      {pre:'These dogs', ru:'выглядят', post:'happy.', acc:['look'], hint:'Собак много.'}]},
+  {id:'prep', short:'Предлоги', title:'of, at, with', term:'Это называется: предлоги в устойчивых сочетаниях',
+    body:'Предлоги не переводятся с русского слово в слово. Эти сочетания проще запомнить целиком.',
+    ex:['one <b>of</b> the best <span>один из лучших</span>','<b>at</b> night <span>ночью</span>','start <b>with</b> <span>начинаться с</span>'],
+    drills:[
+      {pre:'It\'s', ru:'один из лучших', post:'shelters in Yerevan.', acc:['one of the best'], hint:'«Один из» — не from.'},
+      {pre:'I usually edit videos', ru:'ночью', post:'.', acc:['at night'], hint:'Предлог, и никакого артикля.'},
+      {pre:'The film', ru:'начинается с', post:'an interview.', acc:['starts with','begins with','opens with'], hint:'Предлог здесь не from.'}]},
+  {id:'nounAdj', short:'activist films', title:'activist films', term:'Это называется: существительное в роли определения',
+    body:'Когда одно существительное описывает другое, первое стоит без -s, даже если активистов много. Если смысл «для кого», удобнее сказать через for.',
+    ex:['<b>activist</b> films <span>фильмы об активистах</span>','an <b>animal</b> shelter <span>приют для животных</span>','material <b>for</b> journalists <span>материал для журналистов</span>'],
+    drills:[
+      {pre:'She makes', ru:'активистские видео', post:'.', acc:['activist videos'], hint:'Первое слово описывает второе. Нужно ли ему -s?'},
+      {pre:'We visited', ru:'приют для животных', post:'.', acc:['an animal shelter','a shelter for animals','the animal shelter','the shelter for animals'], hint:'animal описывает shelter. И не забудь артикль: перед animal — an.'},
+      {pre:'This is good', ru:'материал для журналистов', post:'.', acc:['material for journalists','journalistic material'], hint:'Для кого материал? Через for.'}]}
+];
+const TOPIC = {}; TOPICS.forEach(t => TOPIC[t.id] = t);
+
+/* ---------- her text ---------- */
+const DISPLAY = [
+  {tokens:T("The film “Confessions of an Eco-Teerorist” – it is funny documentary cinema by Peter Brown ."),fixes:[
+    {type:'replace',from:5,to:5,answer:'Eco-Terrorist”',topic:'minor',why:'В terrorist две буквы r: terror + ist.'},
+    {type:'replace',from:6,to:8,answer:'is',topic:'minor',why:'«Фильм — это…»: тире и «это» по-английски не нужны.'},
+    {type:'insert',gap:9,answer:'a',topic:'article',hint:'Перед funny не хватает маленького слова: это один из многих фильмов.'},
+    {type:'replace',from:10,to:11,answer:'documentary',accept:['documentary','documentary film'],topic:'ff',hint:'Одно из этих слов значит «кинотеатр».'}]},
+  {tokens:T("Peter Brown was an activist and film director who has many years experience on ship “Sea Shepherd”"),fixes:[
+    {type:'replace',from:9,to:9,answer:'had',topic:'minor',why:'Предложение начинается с was, поэтому дальше тоже прошедшее время.'},
+    {type:'insert',gap:12,answer:'of',topic:'minor',why:'«Многолетний опыт» — many years of experience, с of.'},
+    {type:'insert',gap:14,answer:'the',topic:'article',hint:'«На корабле» — на том самом, понятно каком. Не хватает маленького слова.'}]},
+  {skip:true,tokens:T("— it's позволило показать процесс изнутри ."),fixes:[]},
+  {np:true,tokens:T("It's one from the best activists cinema in the world , in my opinion"),fixes:[
+    {type:'replace',from:2,to:2,answer:'of',topic:'prep',hint:'«Один из лучших»: предлог переведён с русского слово в слово.'},
+    {type:'replace',from:5,to:5,answer:'activist',topic:'nounAdj',hint:'Это слово описывает следующее. Нужно ли ему -s?'},
+    {type:'replace',from:6,to:6,answer:'films',accept:['films','movies','documentaries'],topic:'ff',hint:'Это слово значит «кинотеатр». А лучших фильмов много.'}]},
+  {tokens:T(". Because in this cinema activists looks like real people :"),fixes:[
+    {type:'replace',from:0,to:1,answer:', because',topic:'minor',why:'because не начинает отдельное предложение: точка меняется на запятую.'},
+    {type:'replace',from:4,to:4,answer:'film',accept:['film','movie','documentary'],topic:'ff',hint:'И здесь «кинотеатр» вместо «фильм».'},
+    {type:'replace',from:6,to:6,answer:'look',topic:'agreement',hint:'activists — их много. Подходит ли окончание глагола?'}]},
+  {tokens:T("bringing non-vegan food onto the sheep is illigal , but non-vegan volunteers do it and cook on the night ;"),fixes:[
+    {type:'replace',from:5,to:5,answer:'ship',topic:'minor',why:'sheep — овца, ship — корабль.'},
+    {type:'replace',from:7,to:7,answer:'not allowed',accept:['not allowed','against the rules','forbidden','prohibited'],topic:'ff',hint:'illegal значит «против закона страны», а здесь речь о правилах на корабле. Как сказать «нельзя»?'},
+    {type:'replace',from:16,to:18,answer:'at night',topic:'prep',hint:'«Ночью» строится с другим предлогом и без артикля.'}]},
+  {tokens:T("they feel fear and resort to ruses for good journalists material ."),fixes:[
+    {type:'replace',from:9,to:10,answer:'material for journalists',accept:['material for journalists','journalistic material'],topic:'nounAdj',hint:'«Материал для журналистов»: как сказать, для кого материал?'}]},
+  {np:true,tokens:T("Cinema starts from scene where Peter Brown speak :"),fixes:[
+    {type:'replace',from:0,to:0,answer:'The film',accept:['the film','the movie','the documentary'],topic:'ff',hint:'Опять «кинотеатр». И не забудь артикль: понятно, какой фильм.'},
+    {type:'replace',from:2,to:2,answer:'with',topic:'prep',hint:'«Начинается со сцены»: предлог переведён слово в слово.'},
+    {type:'insert',gap:3,answer:'a',accept:['a','the'],topic:'article',hint:'Перед scene не хватает маленького слова.'},
+    {type:'replace',from:7,to:7,answer:'says',topic:'agreement',hint:'Дальше идут его слова. Какой глагол тогда нужен и какое у него окончание после Peter Brown?'}]},
+  {tokens:T("in South Park says what we do something only for camera , and.. it's rights !"),fixes:[
+    {type:'replace',from:3,to:3,answer:'they say',topic:'minor',why:'«Говорят» без подлежащего — they say.'},
+    {type:'replace',from:4,to:4,answer:'that',topic:'minor',why:'«Что» между двумя частями предложения — that, а не what.'},
+    {type:'insert',gap:10,answer:'the',topic:'article',hint:'«Для камеры» — понятно, для какой. Не хватает маленького слова.'},
+    {type:'replace',from:13,to:14,answer:"it's true",topic:'minor',why:'rights — это «права». «Это правда!» — It\'s true! Или They\'re right! — «они правы».'}]},
+  {tokens:T("Later activist explain to this strategy ."),fixes:[
+    {type:'replace',from:1,to:2,answer:'the activists explain',accept:['the activists explain','the activist explains'],topic:'agreement',hint:'Активист один или их много? Проверь окончание глагола и не забудь артикль.'},
+    {type:'replace',from:3,to:4,answer:'this',topic:'minor',why:'После explain сразу идёт то, что объясняют. to — только перед тем, кому объясняют.'}]},
+  {skip:true,tokens:T("Фильм не лишен чувства юмора и это его большой плюс ."),fixes:[]},
+  {np:true,tokens:T("I think , “Confessions of an Eco-Teerorist”"),fixes:[
+    {type:'replace',from:1,to:2,answer:'think',topic:'minor',why:'После I think запятая не нужна.'},
+    {type:'replace',from:6,to:6,answer:'Eco-Terrorist”',topic:'minor'}]},
+  {tokens:T("is really cool cinema about cult activists organization ,"),fixes:[
+    {type:'insert',gap:1,answer:'a',topic:'article',hint:'Перед really cool не хватает маленького слова.'},
+    {type:'replace',from:3,to:3,answer:'film',accept:['film','movie','documentary'],topic:'ff',hint:'И здесь «кинотеатр».'},
+    {type:'replace',from:5,to:5,answer:'a famous',accept:['a famous','an iconic','a well-known','a legendary'],topic:'ff',hint:'cult organisation по-английски — секта. Нужно «известная». И не забудь артикль.'},
+    {type:'replace',from:6,to:6,answer:'activist',topic:'nounAdj',hint:'Это слово описывает organization. Нужно ли ему -s?'}]},
+  {tokens:T("because it's full of life and inspiring to action film ."),fixes:[
+    {type:'replace',from:6,to:9,answer:'inspires you to act',topic:'minor',why:'«Вдохновляет на действия» — готовая фраза: it inspires you to act.'}]}
+];
+
+const BETTER = [
+  '«resort to ruses» → «use tricks»: так проще и естественнее.',
+  '«they feel fear» → «they get scared»: так обычно говорят.',
+  '«and..» → «and...»: в многоточии три точки.',
+  'Слова Питера Брауна можно взять в кавычки: Peter Brown says: "In South Park they say…"'
+];
+
+/* ---------- helpers ---------- */
+const FIXES = [];
+DISPLAY.forEach((u,ui) => u.fixes.forEach((f,j) => { f.id = `u${ui}f${j}`; f.u = ui; if(!f.accept) f.accept = [f.answer]; FIXES.push(f); }));
+const PARA = []; { let p = 0; DISPLAY.forEach((u,ui) => { if(ui>0 && u.np) p++; PARA[ui] = p; }); }
+const pos = f => f.type==='insert' ? f.gap - 0.5 : f.from;
+const fixesOf = id => FIXES.filter(f => f.topic===id).sort((a,b) => a.u-b.u || pos(a)-pos(b));
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const isP = t => /^[.,!?;:]$/.test(t);
+const startsP = t => /^[.,!?;:]/.test(t);
+const join = arr => arr.reduce((a,t,i) => i===0 ? t : a + (startsP(t)?'':' ') + t, '');
+const norm = s => s.toLowerCase().replace(/[’`]/g,"'").replace(/[“”"«»]/g,'').replace(/[.!?,;:]+$/,'').replace(/\s+/g,' ').trim();
+const sep = (u,ui,para) => ui===0 ? '' : u.np ? para : startsP(u.tokens[0]) ? '' : ' ';
+
+function clean(u){
+  const out = [];
+  u.tokens.forEach((t,i) => {
+    const ins = u.fixes.find(f => f.type==='insert' && f.gap===i);
+    if(ins) out.push(ins.answer);
+    const rep = u.fixes.find(f => f.type==='replace' && f.from<=i && i<=f.to);
+    if(rep){ if(i===rep.from) out.push(rep.answer); } else out.push(t);
+  });
+  return join(out);
+}
+const fullText = () => DISPLAY.map((u,ui) => sep(u,ui,'\n\n') + clean(u)).join('');
+const speechText = () => DISPLAY.filter(u => !u.skip).map(clean).join(' ');
+const capAfter = (pre, s) => pre && /[.!?]$/.test(pre) ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const drillLine = (d, ans) => [d.pre, capAfter(d.pre, ans), d.post].filter(Boolean).reduce((a,p) => a ? a + (startsP(p)?'':' ') + p : p, '');
+
+/* ---------- state ---------- */
+const KEY = 'lilian-eco-review-v4';
+let st;
+function reset(){
+  st = {stage:'intro', ti:0, phase:'learn', di:0, dTries:0, dOk:false, dAns:'', dMsg:'', dr:{}, fx:{},
+        open:null, reveal:null, pulse:null, msg:'', ok:false, hint:0, misses:0};
+  FIXES.forEach(f => st.fx[f.id] = {done:false, attempts:0, hinted:false, status:null});
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify({...st, open:null, reveal:null, pulse:null, msg:'', dMsg:''})); }catch(e){}
+}
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if(!d || !d.fx || !FIXES.every(f => d.fx[f.id])) return;
+    st = {...st, ...d, open:null, reveal:null, pulse:null};
+  }catch(e){}
+}
+const topic = () => TOPICS[st.ti];
+const left = () => fixesOf(topic().id).filter(f => !st.fx[f.id].done);
+
+/* ---------- rendering ---------- */
+function unitHTML(u, ui, live){
+  let h = ''; const tk = u.tokens;
+  for(let i=0; i<tk.length; ){
+    if(i>0 && !isP(tk[i])){
+      const ins = u.fixes.find(f => f.type==='insert' && f.gap===i && st.fx[f.id].done);
+      if(ins) h += `<span class="gap ins"><span class="caret">∧</span><span class="above">${esc(ins.answer)}</span></span><wbr>`;
+      else if(live) h += `<span class="gap tap" data-u="${ui}" data-g="${i}" role="button" tabindex="0" aria-label="промежуток между словами"><span class="dot"></span></span><wbr>`;
+      else h += ' ';
+    }
+    const rf = u.fixes.find(f => f.type==='replace' && f.from===i && st.fx[f.id].done);
+    if(rf){
+      const txt = join(tk.slice(rf.from, rf.to+1));
+      h += rf.answer.length>22
+        ? `<span class="seg fixed long"><span class="orig">${esc(txt)}</span> <span class="neu">${esc(rf.answer)}</span></span>`
+        : `<span class="seg fixed"><span class="orig">${esc(txt)}</span><span class="above">${esc(rf.answer)}</span></span>`;
+      i = rf.to + 1; continue;
+    }
+    h += live ? `<span class="seg tap" data-u="${ui}" data-i="${i}" role="button" tabindex="0">${esc(tk[i])}</span>`
+              : `<span class="seg">${esc(tk[i])}</span>`;
+    i++;
+  }
+  return `<span class="sent${u.skip?' ru':''}">${h}</span>`;
+}
+
+function targets(f){
+  if(f.type==='insert') return $$(`.gap[data-u="${f.u}"][data-g="${f.gap}"]`);
+  const out = []; for(let i=f.from; i<=f.to; i++) out.push(...$$(`.seg[data-u="${f.u}"][data-i="${i}"]`));
+  return out;
+}
+
+function renderHead(){
+  const done = i => st.stage==='minor' || st.stage==='final' || (st.stage==='topic' && i<st.ti);
+  $('#chips').innerHTML = TOPICS.map((t,i) => `<span class="chip${done(i)?' done':''}${st.stage==='topic'&&i===st.ti?' cur':''}">${i+1}. ${esc(t.short)}</span>`).join('');
+  const pr = $('#progress');
+  if(st.stage==='topic'){
+    const t = topic();
+    const ph = st.phase==='learn' ? 'Шаг 1 из 3: правило' : st.phase==='hunt' ? 'Шаг 2 из 3: найди ошибки в тексте' : `Шаг 3 из 3: перевод ${st.di+1} из ${t.drills.length}`;
+    pr.textContent = `Тема ${st.ti+1} из ${TOPICS.length}. ${ph}`;
+  } else if(st.stage==='minor') pr.textContent = 'Ещё поправим';
+  else if(st.stage==='final') pr.textContent = 'Готово';
+  else pr.textContent = '';
+}
+
+function renderPage(){
+  const p = $('#page');
+  const show = st.stage==='topic' && st.phase==='hunt';
+  p.hidden = !show;
+  if(!show){ p.innerHTML = ''; return; }
+  p.innerHTML = '<h2>review</h2><p class="text">' + DISPLAY.map((u,ui) => sep(u,ui,'</p><p class="text">') + unitHTML(u, ui, !u.skip)).join('') + '</p>';
+  if(st.open) targets(st.open).forEach(el => el.classList.add('sel'));
+  if(st.pulse) targets(st.pulse).forEach(el => el.classList.add('pulse'));
+}
+
+function ruleHTML(t){
+  let h = `<div class="rule"><h3>${t.title}</h3><div class="term">${t.term}</div><p>${t.body}</p>`;
+  if(t.table) h += `<div class="tbl">${t.table.map(([a,b]) => `<span>${a}</span><span class="r">${b}</span>`).join('')}</div>`;
+  h += `<ul>${t.ex.map(e => `<li>${e}</li>`).join('')}</ul>`;
+  if(t.tip) h += `<p class="tip">${t.tip}</p>`;
+  return h + '</div>';
+}
+
+const canSpeak = 'speechSynthesis' in window;
+const speakBtn = t => canSpeak ? `<button class="speak" data-act="speak" data-text="${esc(t)}">Послушать</button>` : '';
+
+function topicStats(id){
+  const c = {self:0, hint:0, shown:0}; const all = fixesOf(id);
+  all.forEach(f => { const s = st.fx[f.id].status; if(s) c[s]++; });
+  return {...c, total:all.length};
+}
+function statsHTML(c){
+  return `<p class="stat">Нашла и исправила сама: <b>${c.self}</b> из ${c.total}</p><p class="stat">С подсказкой: <b>${c.hint}</b></p><p class="stat">Разобрали вместе: <b>${c.shown}</b></p>`;
+}
+
+function renderPanel(){
+  const p = $('#panel'); let h = '';
+  const msg = st.msg ? `<p class="msg${st.ok?' ok':''}">${st.msg}</p>` : '';
+  if(st.stage==='intro'){
+    h = `<p class="lead">Как это работает</p>
+      <p>Мы разберём пять главных тем из твоей рецензии. В каждой теме три шага:</p>
+      <ol class="steps">
+        <li>Короткое правило.</li>
+        <li>Найди в своём тексте ошибки на эту тему и исправь их. Нажми на слово с ошибкой, а если слово пропущено, на точку между словами. Правильный вариант пишешь сама.</li>
+        <li>Переведи несколько коротких фраз.</li>
+      </ol>
+      <p class="howto">В тексте есть и другие ошибки, их посмотрим в конце. Русские фразы мы уже перевели на уроке: они серые, их пропускаем. Можно делать перерывы: прогресс сохраняется в этом браузере.</p>
+      <div class="row"><button class="btn" data-act="start">Начать</button></div>`;
+  } else if(st.stage==='topic' && st.phase==='learn'){
+    const t = topic();
+    h = ruleHTML(t) + `<p class="count">В твоём тексте ошибок на эту тему: <b>${fixesOf(t.id).length}</b></p>
+      <div class="row"><button class="btn" data-act="hunt">Найти их в тексте</button></div>`;
+  } else if(st.stage==='topic' && st.phase==='hunt'){
+    const t = topic();
+    if(st.reveal){
+      const f = st.reveal;
+      h = `<p class="lead">Правильно так: <span class="hand red">${esc(f.answer)}</span></p><p>${f.hint}</p>
+        <div class="row"><button class="btn" data-act="ack">Понятно</button></div>`;
+    } else if(st.open){
+      const f = st.open, u = DISPLAY[f.u];
+      const orig = f.type==='replace' ? join(u.tokens.slice(f.from, f.to+1)) : '';
+      h = `<p class="lead">${f.type==='insert' ? 'Что здесь пропущено?' : `Как правильно вместо «${esc(orig)}»?`}</p>
+        <div class="type"><input id="ans" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${f.type==='insert'?'пропущенное слово':'правильный вариант'}" aria-label="Твой ответ"><button class="btn" data-act="check">Проверить</button></div>
+        ${msg}<div class="row"><button class="btn ghost" data-act="back">Назад к тексту</button></div>`;
+    } else {
+      const all = fixesOf(t.id), l = left();
+      if(!l.length){
+        h = `${msg}<p class="lead">Все ошибки на тему «${t.title}» найдены</p>${statsHTML(topicStats(t.id))}
+          <div class="row"><button class="btn" data-act="drill">К переводу</button></div>`;
+      } else {
+        h = `<p class="count">Тема «${t.title}». Найдено <b>${all.length-l.length}</b> из <b>${all.length}</b></p>
+          <p class="howto">Нажми на слово с ошибкой. Если слово пропущено, нажми на точку между словами.</p>${msg}
+          <div class="row"><button class="btn ghost" data-act="hint">${['Подсказка','Ещё подсказка','Покажи, где ошибка'][Math.min(st.hint,2)]}</button></div>
+          <details><summary>Напомнить правило</summary>${ruleHTML(t)}</details>`;
+      }
+    }
+  } else if(st.stage==='topic' && st.phase==='drill'){
+    const t = topic(), d = t.drills[st.di], last = st.di===t.drills.length-1;
+    const line = [d.pre ? esc(d.pre) : '', `<span class="gloss">${esc(d.ru)}</span>`, d.post ? esc(d.post) : ''].filter(Boolean)
+      .reduce((a,p) => a ? a + (startsP(p)?'':' ') + p : p, '');
+    h = `<p class="howto">Напиши по-английски то, что в рамке.</p><p class="drill">${line}</p>`;
+    if(!st.dOk){
+      h += `<div class="type"><input id="dans" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="по-английски" aria-label="Перевод"><button class="btn" data-act="dcheck">Проверить</button></div>
+        ${st.dMsg ? `<p class="msg">${st.dMsg}</p>` : ''}`;
+    } else {
+      const full = drillLine(d, st.dAns);
+      const nextLabel = !last ? 'Дальше' : st.ti<TOPICS.length-1 ? `Следующая тема: ${TOPICS[st.ti+1].short}` : 'Ещё поправим';
+      h += `${st.dMsg ? `<p class="msg ok">${st.dMsg}</p>` : ''}<p class="hand clean">${esc(full)}</p>${speakBtn(full)}
+        <div class="row"><button class="btn" data-act="dnext">${nextLabel}</button></div>`;
+    }
+  } else if(st.stage==='minor'){
+    const items = FIXES.filter(f => f.topic==='minor' && f.why);
+    h = `<p class="lead">Ещё поправим</p><p>Эти ошибки встретились по одному разу. Посмотри, как правильно.</p>
+      <ul class="mine">${items.map(f => {
+        const u = DISPLAY[f.u];
+        const was = f.type==='replace' ? join(u.tokens.slice(f.from, f.to+1)) : join(u.tokens.slice(Math.max(0,f.gap-2), f.gap+1));
+        const now = f.type==='replace' ? f.answer : join([...u.tokens.slice(Math.max(0,f.gap-2), f.gap), f.answer, u.tokens[f.gap]]);
+        return `<li><span class="was">${esc(was)}</span><span class="arr">→</span><span class="now">${esc(now)}</span><div class="why">${f.why}</div></li>`;
+      }).join('')}</ul>
+      <p class="lead" style="margin-top:16px">Можно ещё лучше</p>
+      <ul class="better">${BETTER.map(b => `<li>${esc(b)}</li>`).join('')}</ul>
+      <div class="row"><button class="btn" data-act="final">Посмотреть чистовик</button></div>`;
+  } else if(st.stage==='final'){
+    const firstTry = Object.values(st.dr).filter(s => s==='self').length;
+    const nDr = TOPICS.reduce((a,t) => a + t.drills.length, 0);
+    h = `<p class="lead">Твой текст исправлен</p><p class="hand clean">${esc(fullText())}</p>${speakBtn(speechText())}
+      <p class="lead" style="margin-top:16px">Как прошло</p>
+      ${TOPICS.map(t => { const c = topicStats(t.id); return `<p class="stat">${esc(t.short)}: нашла сама <b>${c.self}</b> из ${c.total}</p>`; }).join('')}
+      <p class="stat">Переводы с первой попытки: <b>${firstTry}</b> из ${nDr}</p>
+      <p class="lead" style="margin-top:16px">Правила</p>
+      ${TOPICS.map(t => `<details><summary>${t.title}</summary>${ruleHTML(t)}</details>`).join('')}
+      <div class="row"><button class="btn ghost" data-act="restart">Пройти заново</button></div>`;
+  }
+  p.innerHTML = h;
+  const inp = $('#ans') || $('#dans');
+  if(inp){
+    inp.addEventListener('keydown', e => { if(e.key==='Enter') (inp.id==='ans' ? check() : dcheck()); });
+    inp.focus({preventScroll:true});
+  }
+}
+
+function render(){ renderHead(); renderPage(); renderPanel(); $('#panel').classList.toggle('dock', st.stage==='topic' && st.phase==='hunt'); save(); }
+const toTop = () => window.scrollTo({top:0, behavior:'smooth'});
+
+/* ---------- hunt ---------- */
+function openFix(f){
+  if(st.misses>=3) st.fx[f.id].hinted = true;
+  st.misses = 0; st.open = f; st.msg = ''; st.ok = false; st.pulse = null;
+  render();
+  $('#panel').scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+function resolve(f, status, text){
+  const r = st.fx[f.id]; r.done = true; if(!r.status) r.status = status;
+  st.open = null; st.reveal = null; st.pulse = null; st.hint = 0;
+  const l = left().length;
+  st.msg = text + (l ? ` Осталось найти: ${l}.` : ''); st.ok = true;
+  render();
+}
+function check(){
+  const f = st.open, r = st.fx[f.id], v = norm($('#ans').value);
+  if(!v){ st.msg = 'Напиши ответ в поле.'; st.ok = false; renderPanel(); return; }
+  if(f.accept.map(norm).includes(v)){ resolve(f, (r.attempts===0 && !r.hinted) ? 'self' : 'hint', 'Верно!'); return; }
+  r.attempts++; st.ok = false;
+  if(r.attempts===1){ st.msg = 'Не совсем. ' + f.hint; renderPanel(); }
+  else if(r.attempts===2){ st.msg = `Ещё попытка. Начинается на «${esc(f.answer[0])}…».`; renderPanel(); }
+  else { r.status = 'shown'; st.reveal = f; st.open = null; render(); }
+}
+function hint(){
+  const f = left()[0]; if(!f) return;
+  st.fx[f.id].hinted = true; st.ok = false;
+  if(st.hint===0){ st.msg = `Посмотри на ${PARA[f.u]+1}-й абзац.`; st.hint = 1; render(); }
+  else if(st.hint===1){ st.pulse = f; st.msg = 'Ошибка в месте, обведённом красным.'; st.hint = 2; render(); }
+  else openFix(f);
+}
+function miss(el, text){
+  el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope');
+  st.misses++; st.ok = false;
+  st.msg = text + (st.misses>=3 ? ' Не торопись: перечитай текст медленно или возьми подсказку.' : '');
+  renderPanel();
+}
+function tap(el){
+  if(!(st.stage==='topic' && st.phase==='hunt') || st.open || st.reveal) return;
+  const ui = +el.dataset.u, u = DISPLAY[ui]; let f;
+  if(el.classList.contains('gap')){
+    const g = +el.dataset.g;
+    f = u.fixes.find(x => x.type==='insert' && x.gap===g && !st.fx[x.id].done)
+      || u.fixes.find(x => x.type==='replace' && x.from===g && !st.fx[x.id].done && /^(a|an|the) /i.test(x.answer));
+    if(!f) return miss(el, 'Здесь ничего не пропущено.');
+  } else {
+    const i = +el.dataset.i;
+    f = u.fixes.find(x => x.type==='replace' && x.from<=i && i<=x.to && !st.fx[x.id].done);
+    if(!f) return miss(el, isP(u.tokens[i]) ? 'Этот знак на месте.' : 'Здесь всё верно.');
+  }
+  if(f.topic===topic().id) return openFix(f);
+  st.ok = false;
+  st.msg = f.topic==='minor' ? 'Ошибка здесь есть, но из другой темы. Посмотрим её в конце.' : `Ошибка здесь есть, но это тема «${TOPIC[f.topic].title}». До неё ещё дойдём.`;
+  renderPanel();
+}
+
+/* ---------- drills ---------- */
+function dcheck(){
+  const d = topic().drills[st.di], key = `${topic().id}-${st.di}`, raw = $('#dans').value, v = norm(raw);
+  if(!v){ st.dMsg = 'Напиши перевод в поле.'; renderPanel(); return; }
+  if(d.acc.map(norm).includes(v)){
+    st.dOk = true; st.dAns = raw.trim().replace(/[.!?]+$/,''); st.dMsg = 'Верно!';
+    if(!st.dr[key]) st.dr[key] = st.dTries===0 ? 'self' : 'hint';
+    render(); return;
+  }
+  st.dTries++;
+  if(st.dTries===1) st.dMsg = 'Не совсем. ' + d.hint;
+  else if(st.dTries===2) st.dMsg = `Ещё попытка. Первое слово: ${esc(d.acc[0].split(' ')[0])}.`;
+  else { st.dOk = true; st.dAns = d.acc[0]; st.dMsg = 'Правильно так:'; st.dr[key] = 'shown'; render(); return; }
+  renderPanel();
+}
+function dnext(){
+  const t = topic();
+  st.dTries = 0; st.dOk = false; st.dAns = ''; st.dMsg = '';
+  if(st.di < t.drills.length-1) st.di++;
+  else if(st.ti < TOPICS.length-1){ st.ti++; st.phase = 'learn'; st.di = 0; st.msg = ''; st.hint = 0; }
+  else st.stage = 'minor';
+  render(); toTop();
+}
+
+/* ---------- events ---------- */
+$('#page').addEventListener('click', e => { const el = e.target.closest('.tap'); if(el) tap(el); });
+$('#page').addEventListener('keydown', e => { if(e.key!=='Enter' && e.key!==' ') return; const el = e.target.closest('.tap'); if(el){ e.preventDefault(); tap(el); } });
+$('#panel').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const a = b.dataset.act;
+  if(a==='start'){ st.stage = 'topic'; st.ti = 0; st.phase = 'learn'; render(); toTop(); }
+  else if(a==='hunt'){ st.phase = 'hunt'; st.msg = ''; st.hint = 0; st.misses = 0; render(); toTop(); }
+  else if(a==='hint') hint();
+  else if(a==='check') check();
+  else if(a==='back'){ st.open = null; st.msg = ''; render(); }
+  else if(a==='ack'){ resolve(st.reveal, 'shown', 'Разобрали.'); }
+  else if(a==='drill'){ st.phase = 'drill'; st.di = 0; st.dTries = 0; st.dOk = false; st.dMsg = ''; render(); toTop(); }
+  else if(a==='dcheck') dcheck();
+  else if(a==='dnext') dnext();
+  else if(a==='final'){ FIXES.forEach(f => { if(f.topic==='minor') st.fx[f.id].done = true; }); st.stage = 'final'; render(); toTop(); }
+  else if(a==='restart'){ reset(); render(); toTop(); }
+  else if(a==='speak') speak(b.dataset.text);
+});
+
+function speak(t){
+  if(!canSpeak) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t);
+    const vs = speechSynthesis.getVoices();
+    const v = vs.find(v => v.lang==='en-GB') || vs.find(v => v.lang && v.lang.startsWith('en'));
+    u.lang = v ? v.lang : 'en-GB'; if(v) u.voice = v; u.rate = .9;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+if(canSpeak){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; }catch(e){} }
+
+reset(); load(); render();
+
+</script>
+</body>
+</html>
